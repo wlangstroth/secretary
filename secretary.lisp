@@ -139,7 +139,7 @@
   (< (getf first-event :id)
                 (getf second-event :id)))
 
-(defun todos ()
+(defun show-todos ()
   "Returns a list of todos sorted by ID"
   (dolist
       (event
