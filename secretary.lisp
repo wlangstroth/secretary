@@ -130,7 +130,7 @@
                (if tags (setf (getf row :tags) tags)))
              row)
          *events*))
-  (length *events*))
+  (save-events))
 
 (defun last-n-events (num-events)
   (subseq *events* 0 num-events))
@@ -140,7 +140,7 @@
                 (getf second-event :id)))
 
 (defun show-todos ()
-  "Returns a list of todos sorted by ID"
+  "Returns a formatted list of todos sorted by ID"
   (dolist
       (event
         (sort
@@ -165,3 +165,16 @@
     (getf (first (select (where :id event-id))) :description)
     (getf (first (select (where :id event-id))) :tags)))
   (stamp event-id))
+
+(defun duration-from-seconds (seconds)
+  (cond
+    ((< seconds 86400) (format t "~d hours" (floor (/ seconds 60 60))))
+    ((< seconds (* 86400 7)) (format t "~d days" (floor (/ seconds 60 60 24))))
+    (t (format t "~d weeks" (floor (/ seconds 60 60 24 7))))))
+
+(defun time-since (selector-fn)
+  (duration-from-seconds
+   (-
+    (get-universal-time)
+    (universal-from-iso
+     (getf (first (select selector-fn)) :timestamp)))))
