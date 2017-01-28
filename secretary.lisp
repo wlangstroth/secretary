@@ -168,9 +168,9 @@
 
 (defun duration-from-seconds (seconds)
   (cond
-    ((< seconds 86400) (format t "~d hours" (floor (/ seconds 60 60))))
-    ((< seconds (* 86400 7)) (format t "~d days" (floor (/ seconds 60 60 24))))
-    (t (format t "~d weeks" (floor (/ seconds 60 60 24 7))))))
+    ((< seconds 86400) (format t "~d hour~:p" (floor (/ seconds 60 60))))
+    ((< seconds (* 86400 7)) (format t "~d day~:p" (floor (/ seconds 60 60 24))))
+    (t (format t "~d week~:p" (floor (/ seconds 60 60 24 7))))))
 
 (defun time-since (selector-fn)
   (duration-from-seconds
@@ -178,3 +178,10 @@
     (get-universal-time)
     (universal-from-iso
      (getf (first (select selector-fn)) :timestamp)))))
+
+(defun time-until (selector-fn)
+  (duration-from-seconds
+   (-
+    (universal-from-iso
+     (getf (first (select selector-fn)) :timestamp))
+    (get-universal-time))))
