@@ -53,6 +53,14 @@
        (prompt-read "Description")
        (prompt-read "Tags")
        (prompt-read "Depends On"))))
+    ((equal type :pill)
+     (record-event
+      (make-event
+       (iso-from-universal (get-universal-time))
+       "me"
+       "Did some drugs"
+       "drugs"
+       "")))
     ((equal type :trade)
      (record-event
       (make-event
