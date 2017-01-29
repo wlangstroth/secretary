@@ -26,6 +26,5 @@ it's an immutable fact.
 
 ## List
 
-The whole thing is saved as a list, until that becomes onerous. Switching to a
-database shouldn't be that much effort, and hardly necessary until we start
-getting well into the thousands of events, which should take years.
+The whole thing is saved as a list, until that becomes onerous. I'm actually
+just seeing how far I can push the list, and then I'll throw the data into sqlite.

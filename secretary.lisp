@@ -26,6 +26,7 @@
 
 ;; Event functions
 
+;; TODO: The id is just added to the length of events, which is not ideal
 (defun make-event (timestamp actors description tags depends-on)
   (list :id (+ 1 (length *events*))
         :timestamp timestamp
