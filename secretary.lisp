@@ -26,12 +26,13 @@
 
 ;; Event functions
 
-(defun make-event (timestamp actors description tags)
+(defun make-event (timestamp actors description tags depends-on)
   (list :id (+ 1 (length *events*))
         :timestamp timestamp
         :actors actors
         :description description
-        :tags tags))
+        :tags tags
+        :depends-on depends-on))
 
 (defun record-event (event)
   (push event *events*) event)
@@ -49,35 +50,40 @@
        "todo"
        "me"
        (prompt-read "Description")
-       (prompt-read "Tags"))))
+       (prompt-read "Tags")
+       (prompt-read "Depends On"))))
     ((equal type :trade)
      (record-event
       (make-event
        (prompt-read "Timestamp")
        "me"
        (prompt-read "Description")
-       "trade")))
-    ((equal type :personal)
+       "trade"
+       (prompt-read "Depends On"))))
+    ((equal type :me)
      (record-event
       (make-event
        (iso-from-universal (get-universal-time))
        "me"
        (prompt-read "Description")
-       (prompt-read "Tags"))))
+       (prompt-read "Tags")
+       "")))
     ((equal type :time)
      (record-event
       (make-event
        (prompt-read "Timestamp")
        (prompt-read "Actors")
        (prompt-read "Description")
-       (prompt-read "Tags"))))
+       (prompt-read "Tags")
+       (prompt-read "Depends On"))))
     (t
      (record-event
       (make-event
        (iso-from-universal (get-universal-time))
        (prompt-read "Actors")
        (prompt-read "Description")
-       (prompt-read "Tags"))))))
+       (prompt-read "Tags")
+       (prompt-read "Depends On"))))))
 
 (defun add-todo ()
   (add-event :todo))
@@ -119,7 +125,7 @@
 (defun select (selector-fn)
   (remove-if-not selector-fn *events*))
 
-(defun update (selector-fn &key timestamp actors description tags)
+(defun update (selector-fn &key timestamp actors description tags depends-on)
   (setf *events*
         (mapcar
          #'(lambda (row)
@@ -127,10 +133,11 @@
                (if timestamp (setf (getf row :timestamp) timestamp))
                (if actors (setf (getf row :actors) actors))
                (if description (setf (getf row :description) description))
-               (if tags (setf (getf row :tags) tags)))
+               (if tags (setf (getf row :tags) tags))
+               (if depends-on (setf (getf row :depends-on) depends-on)))
              row)
          *events*))
-  (save-events))
+  (length *events*))
 
 (defun last-n-events (num-events)
   (subseq *events* 0 num-events))
@@ -163,7 +170,8 @@
     "todo"
     "me"
     (getf (first (select (where :id event-id))) :description)
-    (getf (first (select (where :id event-id))) :tags)))
+    (getf (first (select (where :id event-id))) :tags)
+    (getf (first (select (where :id event-id))) :depends-on)))
   (stamp event-id))
 
 (defun duration-from-seconds (seconds)
