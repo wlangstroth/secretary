@@ -59,7 +59,7 @@
        (iso-from-universal (get-universal-time))
        "me"
        "Did some drugs"
-       "drugs"
+       "pill"
        "")))
     ((equal type :trade)
      (record-event
@@ -183,11 +183,36 @@
     (getf (first (select (where :id event-id))) :depends-on)))
   (stamp event-id))
 
+(defparameter *hour-seconds* 3600)
+(defparameter *day-seconds* 86400)
+(defparameter *week-seconds* 604800)
+
 (defun duration-from-seconds (seconds)
   (cond
-    ((< seconds 86400) (format t "~d hour~:p" (floor (/ seconds 60 60))))
-    ((< seconds (* 86400 7)) (format t "~d day~:p" (floor (/ seconds 60 60 24))))
-    (t (format t "~d week~:p" (floor (/ seconds 60 60 24 7))))))
+    ((< seconds 1) "")
+    ((< seconds 60) (format nil "~dS" seconds))
+    ((< seconds 3600)
+     (format nil "~dM~a"
+             (floor (/ seconds 60))
+             (value-from-seconds
+              (- seconds (* 60 (floor (/ seconds 60)))))))
+    ((< seconds *day-seconds*)
+     (format nil "~dH~a"
+             (floor (/ seconds *hour-seconds*))
+             (value-from-seconds
+              (- seconds
+                 (* *hour-seconds* (floor (/ seconds *hour-seconds*)))))))
+    ((< seconds (* *week-seconds*))
+     (format nil "~dD~a"
+             (floor (/ seconds *day-seconds*))
+             (value-from-seconds
+              (- seconds
+                 (* *day-seconds* (floor (/ seconds *day-seconds*)))))))
+    (t (format nil "~dW~a"
+               (floor (/ seconds *week-seconds*))
+               (value-from-seconds
+                (- seconds
+                   (* *week-seconds* (floor (/ seconds *week-seconds*)))))))))
 
 (defun time-since (selector-fn)
   (duration-from-seconds
