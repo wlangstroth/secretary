@@ -2,8 +2,12 @@
 
 (in-package #:secretary)
 
+(load "comparators")
+
 (defvar *events* nil)
-(defparameter *filename* "event-list.db")
+(defvar *data* nil)
+
+(defparameter *events-filename* "event-list.db")
 
 ;; Time functions
 
@@ -24,11 +28,17 @@
             "~d-~2,'0d-~2,'0dT~2,'0d:~2,'0d:~2,'0d"
             year month date hr min sec)))
 
+(defun max-event-id ()
+  (reduce
+   #'max
+   (map 'list #'(lambda (item)
+                  (getf item :id))
+        *events*)))
+
 ;; Event functions
 
-;; TODO: The id is just added to the length of events, which is not ideal
 (defun make-event (timestamp actors description tags depends-on)
-  (list :id (+ 1 (length *events*))
+  (list :id (+ 1 (max-event-id))
         :timestamp timestamp
         :actors actors
         :description description
@@ -84,7 +94,7 @@
        (prompt-read "Actors")
        (prompt-read "Description")
        (prompt-read "Tags")
-       (prompt-read "Depends On"))))
+       "")))
     (t
      (record-event
       (make-event
@@ -92,41 +102,34 @@
        (prompt-read "Actors")
        (prompt-read "Description")
        (prompt-read "Tags")
-       (prompt-read "Depends On"))))))
+       "")))))
 
 (defun add-todo ()
   (add-event :todo))
 
-(defun save-events ()
-  (with-open-file (out *filename*
+(defun save-data (var filename)
+  (with-open-file (out filename
                    :direction :output
                    :if-exists :supersede)
     (with-standard-io-syntax
-      (print *events* out)))
-  (length *events*))
+      (print var out)))
+  (length var))
+
+(defun save-events ()
+  (save-data *events* *events-filename*))
+
+(defun load-data (var filename)
+  (with-open-file (in filename)
+    (with-standard-io-syntax
+      (setf var (read in))))
+  (length var))
 
 (defun load-events ()
-  (with-open-file (in *filename*)
-    (with-standard-io-syntax
-      (setf *events* (read in))))
-  (length *events*))
-
-(defun make-comparison-expr (field value)
-  `(equal (getf event ,field) ,value))
-
-(defun make-comparisons-list (fields)
-  (loop while fields
-     collecting (make-comparison-expr (pop fields) (pop fields))))
+  (load-data *events*
+             *events-filename*))
 
 (defmacro where (&rest clauses)
   `#'(lambda (event) (and ,@(make-comparisons-list clauses))))
-
-(defun make-match-expr (field value)
-  `(search ,value (getf event ,field)))
-
-(defun make-match-list (fields)
-  (loop while fields
-     collecting (make-match-expr (pop fields) (pop fields))))
 
 (defmacro matching (&rest clauses)
   `#'(lambda (event) (and ,@(make-match-list clauses))))
@@ -153,7 +156,7 @@
 
 (defun compare-ids (first-event second-event)
   (< (getf first-event :id)
-                (getf second-event :id)))
+     (getf second-event :id)))
 
 (defun show-todos ()
   "Returns a formatted list of todos sorted by ID"
@@ -162,15 +165,16 @@
         (sort
          (select (where :timestamp "todo")) #'compare-ids))
     (format t
-            "~a) ~a (~a)~%"
+            "[~3d] ~a (~a)~%"
             (getf event :id)
             (getf event :description)
             (getf event :tags))))
 
 (defun stamp (event-id &optional timestamp)
   (update (where :id event-id)
-          :timestamp (cond (timestamp timestamp)
-                           (t (iso-from-universal (get-universal-time))))))
+          :timestamp (cond
+                       (timestamp timestamp)
+                       (t (iso-from-universal (get-universal-time))))))
 
 (defun clone-and-stamp-todo (event-id)
   "Creates a clone of the event with event-id and stamps the original"
@@ -180,7 +184,7 @@
     "me"
     (getf (first (select (where :id event-id))) :description)
     (getf (first (select (where :id event-id))) :tags)
-    (getf (first (select (where :id event-id))) :depends-on)))
+    ""))
   (stamp event-id))
 
 (defparameter *hour-seconds* 3600)
@@ -194,23 +198,23 @@
     ((< seconds 3600)
      (format nil "~dM~a"
              (floor (/ seconds 60))
-             (value-from-seconds
+             (duration-from-seconds
               (- seconds (* 60 (floor (/ seconds 60)))))))
     ((< seconds *day-seconds*)
      (format nil "~dH~a"
              (floor (/ seconds *hour-seconds*))
-             (value-from-seconds
+             (duration-from-seconds
               (- seconds
                  (* *hour-seconds* (floor (/ seconds *hour-seconds*)))))))
     ((< seconds (* *week-seconds*))
      (format nil "~dD~a"
              (floor (/ seconds *day-seconds*))
-             (value-from-seconds
+             (duration-from-seconds
               (- seconds
                  (* *day-seconds* (floor (/ seconds *day-seconds*)))))))
     (t (format nil "~dW~a"
                (floor (/ seconds *week-seconds*))
-               (value-from-seconds
+               (duration-from-seconds
                 (- seconds
                    (* *week-seconds* (floor (/ seconds *week-seconds*)))))))))
 
@@ -223,7 +227,23 @@
 
 (defun time-until (selector-fn)
   (duration-from-seconds
-   (-
-    (universal-from-iso
-     (getf (first (select selector-fn)) :timestamp))
-    (get-universal-time))))
+   (seconds-until
+    (first (select selector-fn)))))
+
+(defun seconds-until (event)
+  (-
+   (universal-from-iso
+    (getf event :timestamp))
+   (get-universal-time)))
+
+(defun non-todos ()
+  (remove-if
+     #'(lambda (event)
+         (equal (getf event :timestamp) "todo"))
+     *events*))
+
+(defun future-events ()
+  (remove-if-not
+   #'(lambda (event)
+       (> (seconds-until event) 0))
+   (non-todos)))

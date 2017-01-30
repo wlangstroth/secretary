@@ -6,4 +6,5 @@
   :license "MIT"
   :serial t
   :components ((:file "package")
+               (:file "comparators")
                (:file "secretary")))
