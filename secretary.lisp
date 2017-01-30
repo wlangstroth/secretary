@@ -68,7 +68,7 @@
       (make-event
        (iso-from-universal (get-universal-time))
        "me"
-       "Did some drugs"
+       "Took my pill"
        "pill"
        "")))
     ((equal type :trade)
@@ -151,7 +151,7 @@
          *events*))
   (length *events*))
 
-(defun last-n-events (num-events)
+(defun last-n (num-events)
   (subseq *events* 0 num-events))
 
 (defun compare-ids (first-event second-event)
@@ -165,7 +165,7 @@
         (sort
          (select (where :timestamp "todo")) #'compare-ids))
     (format t
-            "[~3d] ~a (~a)~%"
+            "[~4d] ~a (~a)~%"
             (getf event :id)
             (getf event :description)
             (getf event :tags))))
@@ -187,9 +187,9 @@
     ""))
   (stamp event-id))
 
-(defparameter *hour-seconds* 3600)
-(defparameter *day-seconds* 86400)
-(defparameter *week-seconds* 604800)
+(defconstant +hour-seconds+ 3600)
+(defconstant +day-seconds+ 86400)
+(defconstant +week-seconds+ 604800)
 
 (defun duration-from-seconds (seconds)
   (cond
@@ -200,23 +200,23 @@
              (floor (/ seconds 60))
              (duration-from-seconds
               (- seconds (* 60 (floor (/ seconds 60)))))))
-    ((< seconds *day-seconds*)
+    ((< seconds +day-seconds+)
      (format nil "~dH~a"
-             (floor (/ seconds *hour-seconds*))
+             (floor (/ seconds +hour-seconds+))
              (duration-from-seconds
               (- seconds
-                 (* *hour-seconds* (floor (/ seconds *hour-seconds*)))))))
-    ((< seconds (* *week-seconds*))
+                 (* +hour-seconds+ (floor (/ seconds +hour-seconds+)))))))
+    ((< seconds (* +week-seconds+))
      (format nil "~dD~a"
-             (floor (/ seconds *day-seconds*))
+             (floor (/ seconds +day-seconds+))
              (duration-from-seconds
               (- seconds
-                 (* *day-seconds* (floor (/ seconds *day-seconds*)))))))
+                 (* +day-seconds+ (floor (/ seconds +day-seconds+)))))))
     (t (format nil "~dW~a"
-               (floor (/ seconds *week-seconds*))
+               (floor (/ seconds +week-seconds+))
                (duration-from-seconds
                 (- seconds
-                   (* *week-seconds* (floor (/ seconds *week-seconds*)))))))))
+                   (* +week-seconds+ (floor (/ seconds +week-seconds+)))))))))
 
 (defun time-since (selector-fn)
   (duration-from-seconds
