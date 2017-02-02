@@ -13,18 +13,10 @@ The knowledge is organized into "events". Things that are events:
 * Trades (to be referenced by traderunner)
 * Todos
 
-## Trades
+## Code
 
-Trades should have a standard format in the description field, so parsing them
-will be easier later. Time is taken care of by timestamp.
+This is a learning lisp project, so the majority of it is based on Peter
+Seibel's Practical Lisp book, which has
+[a permissive license](https://github.com/gigamonkey/pcl-practicals/blob/master/LICENSE).
 
-## Facts
-
-This one is tough. Some facts should have a timestamp, and some probably don't
-need one, so just setting the timestamp to "fact" would not be effective, unless
-it's an immutable fact.
-
-## List
-
-The whole thing is saved as a list, until that becomes onerous. I'm actually
-just seeing how far I can push the list, and then I'll throw the data into sqlite.
+I would recommend looking at his code instead of this code.
