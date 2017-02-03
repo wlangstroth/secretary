@@ -7,4 +7,5 @@
   :serial t
   :components ((:file "package")
                (:file "comparators")
+               (:file "time")
                (:file "secretary")))
