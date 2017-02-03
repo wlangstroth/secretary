@@ -4,8 +4,21 @@
 
 (defvar *events* nil)
 
-(defparameter *events-filename* "event-list.db")
+(defun data-filename (type)
+  (format nil "data/~a.db" type))
 
+(defun load-data (vec filename)
+  (with-open-file (in filename)
+    (with-standard-io-syntax
+      (setf vec (read in)))))
+
+(defun save-data (var filename)
+  (with-open-file (out filename
+                   :direction :output
+                   :if-exists :supersede)
+    (with-standard-io-syntax
+      (print var out)))
+  (length var))
 
 ;; Event functions
 
