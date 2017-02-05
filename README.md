@@ -9,7 +9,7 @@ The knowledge is organized into "events". Things that are events:
 * Kid events, like bath times, television start/stop times
 * Appointments
 * Deadlines
-* Grocery purchases (to be parsed by recipes project)
+* Grocery items added/removed from lists
 * Trades (to be referenced by traderunner)
 * Todos
 

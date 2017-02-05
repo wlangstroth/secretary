@@ -3,22 +3,7 @@
 (in-package #:secretary)
 
 (defvar *events* nil)
-
-(defun data-filename (type)
-  (format nil "data/~a.db" type))
-
-(defun load-data (vec filename)
-  (with-open-file (in filename)
-    (with-standard-io-syntax
-      (setf vec (read in)))))
-
-(defun save-data (var filename)
-  (with-open-file (out filename
-                   :direction :output
-                   :if-exists :supersede)
-    (with-standard-io-syntax
-      (print var out)))
-  (length var))
+(defvar *events-filename* "event-list.db")
 
 ;; Event functions
 
@@ -34,45 +19,48 @@
   (force-output *query-io*)
   (read-line *query-io*))
 
-(defun make-event (timestamp description tags)
+(defun make-event (timestamp description tags references)
   (list :id (+ 1 (max-event-id))
         :timestamp timestamp
         :description description
-        :tags tags))
+        :tags tags
+        :references references))
 
 (defun record-event (event)
   (push event *events*) event)
 
-(defun add-event (&optional type)
-  (cond
-    ((equal type :todo)
-     (record-event
-      (make-event
-       "todo"
-       (prompt-read "Description")
-       (prompt-read "Tags"))))
-    ((equal type :trade)
+(defun add-trade ()
      (record-event
       (make-event
        (iso-now)
        (prompt-read "Description")
-       "trade")))
+       "trade"
+       "")))
+
+(defun add-todo ()
+  (record-event
+   (make-event
+    "todo"
+    (prompt-read "Description")
+    (prompt-read "Tags")
+    (prompt-read "Depends on"))))
+
+(defun add-event (&optional type)
+  (cond
     ((equal type :time)
      (record-event
       (make-event
        (prompt-read "Timestamp")
        (prompt-read "Description")
-       (prompt-read "Tags"))))
+       (prompt-read "Tags")
+       (prompt-read "References"))))
     (t
      (record-event
       (make-event
        (iso-now)
        (prompt-read "Description")
-       (prompt-read "Tags")))))
-  (save-events))
-
-(defun add-todo ()
-  (add-event :todo))
+       (prompt-read "Tags")
+       (prompt-read "References"))))))
 
 (defun save-events ()
   (with-open-file (out *events-filename*
@@ -106,16 +94,13 @@
                (if description (setf (getf row :description) description))
                (if tags (setf (getf row :tags) tags)))
              row)
-         *events*))
-  (save-events)
-  (length *events*))
+         *events*)))
 
 (defun delete-events (selector-fn)
   (setf *events*
-        (remove-if selector-fn *events*))
-  (save-events))
+        (remove-if selector-fn *events*)))
 
-(defun last-n (num-events)
+(defun last-n (&optional (num-events 1))
   (subseq *events* 0 num-events))
 
 (defun compare-ids (first-event second-event)
@@ -140,23 +125,26 @@
                        (timestamp timestamp)
                        (t (iso-now)))))
 
-(defun clone-and-stamp-todo (event-id)
-  "Creates a clone of the event with event-id and stamps the original"
-  (record-event
-   (make-event
-    "todo"
-    (getf (first (select (where :id event-id))) :description)
-    (getf (first (select (where :id event-id))) :tags)))
-  (stamp event-id))
-
-(defun non-todos ()
-  (remove-if
-     #'(lambda (event)
-         (equal (getf event :timestamp) "todo"))
-     *events*))
-
-(defun future-events ()
+(defun groceries ()
   (remove-if-not
    #'(lambda (event)
-       (> (seconds-until event) 0))
-   (non-todos)))
+       (and
+        (string= (getf event :timestamp) "need")
+        (string= (getf event :tags) "grocery")))
+   *events*))
+
+(defun grocery-list ()
+  (let ((groc-vec (groceries)))
+    (loop
+       for item being the elements of groc-vec
+       do (format t "* ~50a ~10@a~%"
+                  (getf item :description)
+                  (format nil "(#~d)" (getf item :id))))))
+
+(defun future-events ()
+  (remove-if
+   #'(lambda (event)
+       (or (string< (getf event :timestamp) (iso-now))
+           (string= (getf event :timestamp) "todo")
+           (string= (getf event :timestamp) "need")))
+   *events*))

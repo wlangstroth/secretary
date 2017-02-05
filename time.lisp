@@ -70,3 +70,27 @@
    (universal-from-iso
     (getf event :timestamp))
    (get-universal-time)))
+
+(defun day-of-week (timestamp)
+  (let
+      ((days '("Monday"
+               "Tuesday"
+               "Wednesday"
+               "Thursday"
+               "Friday"
+               "Saturday"
+               "Sunday")))
+    (elt days
+         (nth-value
+          6
+          (decode-universal-time (universal-from-iso timestamp))))))
+
+(defun from-now (duration)
+  "Adds iso duration to now. This only works up to weeks (not months or years)"
+  (format nil "~a ~a" duration (get-universal-time)))
+
+(defun seconds-from-duration (duration)
+  "Takes a limited subset of iso duration and turns it into seconds"
+  (format t "~a" duration)
+
+  1)
