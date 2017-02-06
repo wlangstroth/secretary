@@ -19,12 +19,13 @@
   (force-output *query-io*)
   (read-line *query-io*))
 
-(defun make-event (timestamp description tags references)
+(defun make-event (timestamp description tags references expires)
   (list :id (+ 1 (max-event-id))
         :timestamp timestamp
         :description description
         :tags tags
-        :references references))
+        :references references
+        :expires expires))
 
 (defun record-event (event)
   (push event *events*) event)
@@ -35,6 +36,7 @@
        (iso-now)
        (prompt-read "Description")
        "trade"
+       ""
        "")))
 
 (defun add-todo ()
@@ -43,7 +45,8 @@
     "todo"
     (prompt-read "Description")
     (prompt-read "Tags")
-    (prompt-read "Depends on"))))
+    (prompt-read "Depends on")
+    (prompt-read "Deadline"))))
 
 (defun add-event (&optional type)
   (cond
@@ -53,14 +56,25 @@
        (prompt-read "Timestamp")
        (prompt-read "Description")
        (prompt-read "Tags")
-       (prompt-read "References"))))
+       (prompt-read "References")
+       (prompt-read "Expires"))))
     (t
      (record-event
       (make-event
        (iso-now)
        (prompt-read "Description")
        (prompt-read "Tags")
-       (prompt-read "References"))))))
+       (prompt-read "References")
+       (prompt-read "Expires"))))))
+
+(defun add-note ()
+  (record-event
+   (make-event
+    (iso-now)
+    (prompt-read "Description")
+    (prompt-read "Tags")
+    ""
+    "")))
 
 (defun save-events ()
   (with-open-file (out *events-filename*
@@ -123,7 +137,8 @@
   (update (where :id event-id)
           :timestamp (cond
                        (timestamp timestamp)
-                       (t (iso-now)))))
+                       (t (iso-now))))
+  (select (where :id event-id)))
 
 (defun groceries ()
   (remove-if-not

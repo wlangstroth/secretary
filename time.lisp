@@ -27,6 +27,7 @@
 (defconstant +week-seconds+ 604800)
 
 (defun duration-from-seconds (seconds)
+  "Returns a subset of iso duration, without P or T designators, and limited to weeks, days, minutes, seconds"
   (cond
     ((< seconds 1) "")
     ((< seconds 60) (format nil "~dS" seconds))
