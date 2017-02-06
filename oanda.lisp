@@ -1,7 +1,5 @@
 (in-package #:secretary)
 
-;; (require 'drakma)
-;; (require 'st-json)
 (load "secrets")
 
 ;; Either you do the following, or you have to (flexi-streams:octets-to-string)
@@ -28,13 +26,10 @@
    url
    :additional-headers `(("Authorization" . ,(auth-bearer)))))
 
-;; Not yet good enough at Lisp to know a way around having to have two nearly
-;; identical functions. st-json:getjso* will only take a literal string.
-(defun ask-price-of (instrument)
-  (st-json:getjso* "ask" (first (prices instrument))))
-
-(defun bid-price-of (instrument)
-  (st-json:getjso* "bid" (first (prices instrument))))
+(defun price-of (instrument bid-or-ask)
+  "SBCL complains unless bid-or-ask is coerced"
+  (st-json:getjso* (coerce bid-or-ask 'string)
+                   (first (prices instrument))))
 
 (defun prices (instrument)
   (st-json:getjso
@@ -58,8 +53,8 @@
        (trade-time (subseq (st-json:getjso* "time" trade-obj) 0 19))
        (price
         (cond
-          ((string= side "sell") (ask-price-of name))
-          (t (bid-price-of name))))
+          ((string= side "sell") (price-of name "ask"))
+          (t (price-of name "bid"))))
        (adjustment-factor
         (cond
           ((string= (subseq name 0 3) "USD") price)
@@ -128,6 +123,6 @@
               (t 1)))
        (price
         (cond
-          ((string= side "sell") (ask-price-of instrument))
-          ((string= side "buy") (bid-price-of instrument)))))
+          ((string= side "sell") (price-of instrument "ask"))
+          ((string= side "buy") (price-of instrument "bid")))))
     (format t "~a" (* side-factor (/ (position-size) (- price stop))))))
