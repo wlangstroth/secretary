@@ -76,6 +76,24 @@
     ""
     "")))
 
+(defun add-need ()
+  (record-event
+   (make-event
+    "need"
+    (prompt-read "Description")
+    (prompt-read "Tags")
+    ""
+    "")))
+
+(defun add-grocery ()
+  (record-event
+   (make-event
+    "need"
+    (prompt-read "Item")
+    "grocery"
+    ""
+    "")))
+
 (defun save-events ()
   (with-open-file (out *events-filename*
                    :direction :output
@@ -108,7 +126,8 @@
                (if description (setf (getf row :description) description))
                (if tags (setf (getf row :tags) tags)))
              row)
-         *events*)))
+         *events*))
+  (last-n))
 
 (defun delete-events (selector-fn)
   (setf *events*
@@ -155,6 +174,9 @@
        do (format t "* ~50a ~10@a~%"
                   (getf item :description)
                   (format nil "(#~d)" (getf item :id))))))
+
+(defun grocery-message ()
+  (let (groc-vec)))
 
 (defun future-events ()
   (remove-if

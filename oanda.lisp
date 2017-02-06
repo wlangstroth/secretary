@@ -50,7 +50,7 @@
        (units (st-json:getjso* "units" trade-obj))
        (trade-price (st-json:getjso* "price" trade-obj))
        (side (st-json:getjso* "side" trade-obj))
-       (trade-time (subseq (st-json:getjso* "time" trade-obj) 0 19))
+       (trade-time (subseq (st-json:getjso* "time" trade-obj) 0 16))
        (price
         (cond
           ((string= side "sell") (price-of name "ask"))
@@ -68,10 +68,10 @@
                             (* trade-price units)))
                       adjustment-factor))
        (bought-sold
-        (cond ((string= side "sell") "SHORT")
-              (t "LONG")))
+        (cond ((string= side "sell") "↓")
+              (t "↑")))
        (pl-string (format nil "~$" price-diff)))
-    (format t "~%~a | ~5a ~5@a ~10a @ ~7@a | P/L: ~7@a ~%"
+    (format t "~%~a ~a ~5@a ~10a @ ~7@a | P/L: ~7@a ~%"
             trade-time
             bought-sold
             units name
@@ -79,8 +79,9 @@
             pl-string)))
 
 (defun show-trades ()
+  (format t "~a~%" (iso-now))
   (loop for trade in (trades)
-       do (show-trade trade)))
+     do (show-trade trade)))
 
 (defun account ()
   (st-json:read-json
@@ -93,6 +94,16 @@
 
 (defun position-size (&optional (size *position-factor*))
   (* (balance) size))
+
+(defun profit-loss ()
+  (format t "~%P/L: ~a~%"
+          (st-json:getjso*
+           "unrealizedPl"
+           (account))))
+
+(defun status ()
+  (show-trades)
+  (profit-loss))
 
 (defun instrument-url (instrument field)
   "*default-account* is in the secrets file"
