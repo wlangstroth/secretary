@@ -96,12 +96,12 @@
   (* (balance) size))
 
 (defun profit-loss ()
-  (format t "~%P/L: ~a~%"
+  (format t "~%P/L: ~a"
           (st-json:getjso*
            "unrealizedPl"
            (account))))
 
-(defun status ()
+(defun trade-status ()
   (show-trades)
   (profit-loss))
 

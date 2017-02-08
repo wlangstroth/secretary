@@ -10,7 +10,7 @@ The knowledge is organized into "events". Things that are events:
 * Appointments
 * Deadlines
 * Grocery items added/removed from lists
-* Trades (to be referenced by traderunner)
+* Trades
 * Todos
 
 ## Code

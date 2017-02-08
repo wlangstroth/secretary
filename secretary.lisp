@@ -10,8 +10,9 @@
 (defun max-event-id ()
   (reduce
    #'max
-   (map 'list #'(lambda (item)
-                  (getf item :id))
+   (map 'list
+        #'(lambda (item)
+            (getf item :id))
         *events*)))
 
 (defun prompt-read (prompt)
@@ -127,7 +128,7 @@
                (if tags (setf (getf row :tags) tags)))
              row)
          *events*))
-  (last-n))
+  (length *events*))
 
 (defun delete-events (selector-fn)
   (setf *events*
@@ -147,10 +148,9 @@
         (sort
          (select (where :timestamp "todo")) #'compare-ids))
     (format t
-            "[~4d] ~a (~a)~%"
+            "[~4d] ~a~%"
             (getf event :id)
-            (getf event :description)
-            (getf event :tags))))
+            (getf event :description))))
 
 (defun stamp (event-id &optional timestamp)
   (update (where :id event-id)
@@ -168,12 +168,13 @@
    *events*))
 
 (defun grocery-list ()
-  (let ((groc-vec (groceries)))
-    (loop
-       for item being the elements of groc-vec
-       do (format t "* ~50a ~10@a~%"
-                  (getf item :description)
-                  (format nil "(#~d)" (getf item :id))))))
+  (loop
+     for item in (groceries)
+     do (format t "* ~50a ~10@a~%"
+                (getf item :description)
+                (format nil "(#~d)" (getf item :id)))))
+
+
 
 (defun grocery-message ()
   (let (groc-vec)))
