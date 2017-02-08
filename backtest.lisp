@@ -57,6 +57,14 @@ and get back a plist.
 
 ;; Strategies to Test
 
+;; Three day majority for NATGAS:
+;; Start with t - 3 days. Determine the direction of that day. If the next two
+;; days have new maxima in the same direction, that's the easy case: either
+;; continue or start a new trade in that direction.
+;; If the middle day is down range from the first, but the second is up range
+;; from the first, same as above.
+;; If the two end days are down range, exit an existing trade.
+;;
 ;; (defun three-day-majority (ohlc-list)
 ;;   ())
 

@@ -118,17 +118,19 @@
 (defun select (selector-fn)
   (remove-if-not selector-fn *events*))
 
-(defun update (selector-fn &key timestamp description tags)
+(defun update (selector-fn &key timestamp description tags references expires)
   (setf *events*
         (mapcar
          #'(lambda (row)
              (when (funcall selector-fn row)
                (if timestamp (setf (getf row :timestamp) timestamp))
                (if description (setf (getf row :description) description))
-               (if tags (setf (getf row :tags) tags)))
+               (if tags (setf (getf row :tags) tags))
+               (if references (getf row :references) references)
+               (if expires (getf row :expires) expires))
              row)
          *events*))
-  (length *events*))
+  (select selector-fn))
 
 (defun delete-events (selector-fn)
   (setf *events*
