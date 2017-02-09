@@ -32,13 +32,15 @@
   (push event *events*) event)
 
 (defun add-trade ()
-     (record-event
-      (make-event
-       (iso-now)
-       (prompt-read "Description")
-       "trade"
-       ""
-       "")))
+  (let ((timestamp (prompt-read "Time (default now)")))
+    (record-event
+     (make-event
+      (cond  ((= 0 (length timestamp)) (iso-now))
+             (t timestamp))
+      (prompt-read "Description")
+      "trade"
+      ""
+      ""))))
 
 (defun add-todo ()
   (record-event
@@ -49,24 +51,16 @@
     (prompt-read "Depends on")
     (prompt-read "Deadline"))))
 
-(defun add-event (&optional type)
-  (cond
-    ((equal type :time)
-     (record-event
-      (make-event
-       (prompt-read "Timestamp")
-       (prompt-read "Description")
-       (prompt-read "Tags")
-       (prompt-read "References")
-       (prompt-read "Expires"))))
-    (t
-     (record-event
-      (make-event
-       (iso-now)
-       (prompt-read "Description")
-       (prompt-read "Tags")
-       (prompt-read "References")
-       (prompt-read "Expires"))))))
+(defun add-event ()
+  (let ((timestamp (prompt-read "Time (default now)")))
+    (record-event
+     (make-event
+      (cond  ((= 0 (length timestamp)) (iso-now))
+             (t timestamp))
+      (prompt-read "Description")
+      (prompt-read "Tags")
+      (prompt-read "References")
+      (prompt-read "Expires")))))
 
 (defun add-note ()
   (record-event
@@ -134,7 +128,8 @@
 
 (defun delete-events (selector-fn)
   (setf *events*
-        (remove-if selector-fn *events*)))
+        (remove-if selector-fn *events*))
+  (length *events*))
 
 (defun last-n (&optional (num-events 1))
   (subseq *events* 0 num-events))
