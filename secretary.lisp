@@ -138,17 +138,6 @@
   (< (getf first-event :id)
      (getf second-event :id)))
 
-(defun show-todos ()
-  "Returns a formatted list of todos sorted by ID"
-  (dolist
-      (event
-        (sort
-         (select (where :timestamp "todo")) #'compare-ids))
-    (format t
-            "[~4d] ~a~%"
-            (getf event :id)
-            (getf event :description))))
-
 (defun stamp (event-id &optional timestamp)
   (update (where :id event-id)
           :timestamp (cond
@@ -164,18 +153,6 @@
         (string= (getf event :tags) "grocery")))
    *events*))
 
-(defun grocery-list ()
-  (loop
-     for item in (groceries)
-     do (format t "* ~50a ~10@a~%"
-                (getf item :description)
-                (format nil "(#~d)" (getf item :id)))))
-
-
-
-(defun grocery-message ()
-  (let (groc-vec)))
-
 (defun future-events ()
   (remove-if
    #'(lambda (event)
@@ -183,3 +160,21 @@
            (string= (getf event :timestamp) "todo")
            (string= (getf event :timestamp) "need")))
    *events*))
+
+(defun grocery-list ()
+  (loop
+     for item in (groceries)
+     do (format t "* ~50a ~10@a~%"
+                (getf item :description)
+                (format nil "(#~d)" (getf item :id)))))
+
+(defun show-todos ()
+  "Returns a formatted list of todos sorted by ID"
+  (dolist
+      (event
+        (sort
+         (select (where :timestamp "todo")) #'compare-ids))
+    (format t
+            "[~4d] ~a~%"
+            (getf event :id)
+            (getf event :description))))

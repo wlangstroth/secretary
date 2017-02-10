@@ -26,7 +26,7 @@
    url
    :additional-headers `(("Authorization" . ,(auth-bearer)))))
 
-(defun price-of (instrument bid-or-ask)
+(defun price-of (instrument &optional (bid-or-ask "bid"))
   "SBCL complains unless bid-or-ask is coerced"
   (st-json:getjso* (coerce bid-or-ask 'string)
                    (first (prices instrument))))
@@ -122,7 +122,7 @@
   (st-json:read-json
    (oanda-request (instrument-url instrument field))))
 
-(defun mid-point (high low)
+(defun midpoint (high low)
   (/ (+ high low) 2))
 
 ; For *_USD, side * (position / (current_price - stop))
@@ -137,3 +137,16 @@
           ((string= side "sell") (price-of instrument "ask"))
           ((string= side "buy") (price-of instrument "bid")))))
     (format t "~a" (* side-factor (/ (position-size) (- price stop))))))
+
+(defun make-trade (instrument side stop)
+  (units-for-trade (instrument side stop)))
+
+(defun deal-or-no-deal (instrument)
+  ;; get candles
+  ;; Work backwards from present candle, find extremes until five are found
+  ;; Use the closest three to form a first hypothesis of trend
+  ;; Correct for new wide-swinging extremes
+  ;; Find midpont between last two extremes
+  ;; If movement is in the same direction as the trend, and reaches the midpoint
+  ;; then deal
+  )
