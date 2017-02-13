@@ -145,7 +145,7 @@ than other methods, but they document the process clearly.
     (format t "~a" (* side-factor (/ (position-size) (- price stop))))))
 
 (defun make-trade (instrument side stop)
-  (units-for-trade (instrument side stop)))
+  (units-for-trade instrument side stop))
 
 (defun deal-or-no-deal (instrument)
   ;; get candles
@@ -155,4 +155,16 @@ than other methods, but they document the process clearly.
   ;; Find midpont between last two extremes
   ;; If movement is in the same direction as the trend, and reaches the midpoint
   ;; then deal
-  )
+  instrument)
+
+(defparameter *instrument-hours*
+  '(:xcu-usd "18:00-17:15"
+    :natgas-usd "18:00-17:15"
+    :usd-cad ""
+    :usd-jpy ""
+    :sugar-usd "03:00-13:00"
+    :soybn-usd "18:00-06:45, 07:30-13:15"))
+
+(defun trading-hours (&optional instrument)
+  (cond ((null instrument) *instrument-hours*)
+        (t (getf *instrument-hours* instrument))))
