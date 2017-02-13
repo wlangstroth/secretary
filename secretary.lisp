@@ -132,6 +132,7 @@
   (length *events*))
 
 (defun last-n (&optional (num-events 1))
+  "Gets the last num-events pushed onto the list"
   (subseq *events* 0 num-events))
 
 (defun compare-ids (first-event second-event)
@@ -162,6 +163,7 @@
    *events*))
 
 (defun grocery-list ()
+  "Returns a formatted grocery list"
   (loop
      for item in (groceries)
      do (format t "* ~50a ~10@a~%"
@@ -178,3 +180,6 @@
             "[~4d] ~a~%"
             (getf event :id)
             (getf event :description))))
+
+(defun todo-list ()
+  (show-todos))

@@ -106,7 +106,10 @@
   (profit-loss))
 
 (defun instrument-url (instrument field)
-  "*default-account* is in the secrets file"
+"
+The query string only accepts one instrument and field for some reason.
+*default-account* is in the secrets file
+"
   (concatenate 'string
                *base-url*
                "instruments?"
@@ -125,9 +128,12 @@
 (defun midpoint (high low)
   (/ (+ high low) 2))
 
-; For *_USD, side * (position / (current_price - stop))
-; USD_*, above / current_price
 (defun units-for-trade (instrument side stop)
+"
+On the sell side, we want the ask price of the instrument. On the buy side, we
+will be paying the bid price. The string comparisons below are less efficient
+than other methods, but they document the process clearly.
+"
   (let*
       ((side-factor
         (cond ((string= side "sell") -1)
