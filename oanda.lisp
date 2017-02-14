@@ -44,6 +44,10 @@
    (st-json:read-json
     (oanda-request *trades-url*))))
 
+(defun side-factor (side)
+  (cond ((string= side "sell") -1)
+               (t 1)))
+
 (defun show-trade (trade-obj)
   (let*
       ((name (st-json:getjso* "instrument" trade-obj))
@@ -59,11 +63,7 @@
         (cond
           ((string= (subseq name 0 3) "USD") price)
           (t 1)))
-       (side-factor
-        (cond
-          ((string= side "sell") -1)
-          (t 1)))
-       (price-diff (/ (* side-factor
+       (price-diff (/ (* (side-factor side)
                          (- (* price units)
                             (* trade-price units)))
                       adjustment-factor))
@@ -128,34 +128,20 @@ The query string only accepts one instrument and field for some reason.
 (defun midpoint (high low)
   (/ (+ high low) 2))
 
+
+(defun units-for-limit-trade (price side stop)
+  (format t "~d"
+          (floor
+           (* (side-factor side)
+              (/ (position-size) (- price stop))))))
+
 (defun units-for-trade (instrument side stop)
-"
-On the sell side, we want the ask price of the instrument. On the buy side, we
-will be paying the bid price. The string comparisons below are less efficient
-than other methods, but they document the process clearly.
-"
-  (let*
-      ((side-factor
-        (cond ((string= side "sell") -1)
-              (t 1)))
-       (price
+  (let
+      ((price
         (cond
           ((string= side "sell") (price-of instrument "ask"))
           ((string= side "buy") (price-of instrument "bid")))))
-    (format t "~a" (* side-factor (/ (position-size) (- price stop))))))
-
-(defun make-trade (instrument side stop)
-  (units-for-trade instrument side stop))
-
-(defun deal-or-no-deal (instrument)
-  ;; get candles
-  ;; Work backwards from present candle, find extremes until five are found
-  ;; Use the closest three to form a first hypothesis of trend
-  ;; Correct for new wide-swinging extremes
-  ;; Find midpont between last two extremes
-  ;; If movement is in the same direction as the trend, and reaches the midpoint
-  ;; then deal
-  instrument)
+    (units-for-limit-trade price side stop)))
 
 (defparameter *instrument-hours*
   '(:xcu-usd "18:00-17:15"
