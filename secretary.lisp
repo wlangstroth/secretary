@@ -170,7 +170,7 @@
                 (getf item :description)
                 (format nil "(#~d)" (getf item :id)))))
 
-(defun show-todos ()
+(defun todo-list ()
   "Returns a formatted list of todos sorted by ID"
   (dolist
       (event
@@ -181,5 +181,5 @@
             (getf event :id)
             (getf event :description))))
 
-(defun todo-list ()
-  (show-todos))
+(defun kg-to-lb (kgs)
+  (* kgs 2.204623))

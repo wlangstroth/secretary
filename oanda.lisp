@@ -128,12 +128,11 @@ The query string only accepts one instrument and field for some reason.
 (defun midpoint (high low)
   (/ (+ high low) 2))
 
-
 (defun units-for-limit-trade (price side stop)
   (format t "~d"
           (floor
            (* (side-factor side)
-              (/ (position-size) (- price stop))))))
+              (/ (position-size) (- stop price))))))
 
 (defun units-for-trade (instrument side stop)
   (let
