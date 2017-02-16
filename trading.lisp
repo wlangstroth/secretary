@@ -28,3 +28,31 @@
 (defun trading-hours (&optional instrument)
   (cond ((null instrument) *instrument-hours*)
         (t (getf *instrument-hours* instrument))))
+
+(defclass candle ()
+  ((start-datetime
+    :initarg :start-datetime)
+   (ask-high
+    :initarg :ask-high
+    :reader ask-high)
+   (bid-high
+    :initarg :bid-high
+    :reader bid-high)
+   (ask-low
+    :initarg :ask-low
+    :reader ask-low)
+   (bid-low
+    :initarg :bid-low
+    :reader bid-low)
+   (ask-open
+    :initarg :ask-open
+    :reader ask-open)
+   (bid-open
+    :initarg :bid-open
+    :reader bid-open)
+   (ask-close
+    :initarg :ask-close
+    :reader ask-close)
+   (bid-close
+    :initarg :bid-close
+    :reader bid-close)))
